@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>974</width>
+    <width>1115</width>
     <height>779</height>
    </rect>
   </property>
@@ -103,12 +103,21 @@
        </color>
       </brush>
      </colorrole>
-     <colorrole role="HighlightedText">
+     <colorrole role="Highlight">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
         <red>255</red>
-        <green>0</green>
+        <green>255</green>
         <blue>127</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="HighlightedText">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
        </color>
       </brush>
      </colorrole>
@@ -231,12 +240,21 @@
        </color>
       </brush>
      </colorrole>
-     <colorrole role="HighlightedText">
+     <colorrole role="Highlight">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
         <red>255</red>
-        <green>0</green>
+        <green>255</green>
         <blue>127</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="HighlightedText">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
        </color>
       </brush>
      </colorrole>
@@ -359,12 +377,21 @@
        </color>
       </brush>
      </colorrole>
+     <colorrole role="Highlight">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>0</red>
+        <green>120</green>
+        <blue>215</blue>
+       </color>
+      </brush>
+     </colorrole>
      <colorrole role="HighlightedText">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>255</red>
+        <red>0</red>
         <green>0</green>
-        <blue>127</blue>
+        <blue>0</blue>
        </color>
       </brush>
      </colorrole>
@@ -411,28 +438,8 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_2">
-    <item row="2" column="0">
+    <item row="5" column="0">
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0" rowspan="3">
-       <widget class="QLabel" name="TotalItems">
-        <property name="font">
-         <font>
-          <family>MS UI Gothic</family>
-          <pointsize>12</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>전체항목</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QRadioButton" name="Include">
-        <property name="text">
-         <string>파생포함</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="1">
        <widget class="QRadioButton" name="Exclude">
         <property name="text">
@@ -447,30 +454,64 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="3">
-       <widget class="QTableView" name="tableView"/>
+      <item row="0" column="1">
+       <widget class="QRadioButton" name="Include">
+        <property name="text">
+         <string>파생포함</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" rowspan="2">
+       <widget class="QLabel" name="TotalItems">
+        <property name="font">
+         <font>
+          <family>MS UI Gothic</family>
+          <pointsize>12</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>전체항목</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="3">
+       <widget class="QTableWidget" name="totalListTable"/>
       </item>
      </layout>
     </item>
-    <item row="2" column="2">
+    <item row="5" column="2">
      <layout class="QGridLayout" name="gridLayout_4">
       <item row="1" column="0">
-       <widget class="QTableWidget" name="tableWidget"/>
+       <widget class="QTableWidget" name="OutputTable">
+        <property name="sortingEnabled">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
       <item row="0" column="0">
        <widget class="QComboBox" name="comboBox"/>
       </item>
      </layout>
     </item>
-    <item row="0" column="0">
+    <item row="2" column="0">
      <widget class="QLabel" name="LoginStatus">
       <property name="text">
        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600;&quot;&gt;LogOff&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="1">
+    <item row="5" column="1">
      <layout class="QGridLayout" name="gridLayout_3">
+      <item row="0" column="1">
+       <widget class="QPushButton" name="Sub">
+        <property name="text">
+         <string>관심종목제거</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="InterrestItem">
         <property name="font">
@@ -484,17 +525,17 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="Sub">
-        <property name="text">
-         <string>관심종목제거</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0" colspan="2">
-       <widget class="QTableView" name="tableView_2"/>
+       <widget class="QTableWidget" name="intListTable"/>
       </item>
      </layout>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPushButton" name="LogonCheck">
+      <property name="text">
+       <string>로그인</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -503,7 +544,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>974</width>
+     <width>1115</width>
      <height>18</height>
     </rect>
    </property>

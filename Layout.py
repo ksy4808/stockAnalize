@@ -6,8 +6,14 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QPalette
 
+import win32com.client
+import ctypes
+import pandas as pd
 
 
+g_objCodeMgr = win32com.client.Dispatch('CpUtil.CpCodeMgr')
+g_objCpStatus = win32com.client.Dispatch('CpUtil.CpCybos')
+g_objCpTrade = win32com.client.Dispatch('CpTrade.CpTdUtil')
 
 
 
@@ -21,17 +27,47 @@ class WindowClass(QMainWindow, form_class) :
     def __init__(self) :
         super().__init__()
         
-        self.worker = Qworker()
-        self.worker.start()
-        self.worker.timeout.connect(self.timeout)   # 시그널 슬롯 등록
+
+        #self.worker = Qworker()
+        #self.worker.start()
+        #self.worker.timeout.connect(self.timeout)   # 시그널 슬롯 등록
 
         self.setupUi(self)
         pal = QPalette()
-        
+        self.LogonCheck.clicked.connect(self.btn_login)
 
 
     def timeout(self, num):
         num+=1
+    def writeLoginStatus(self, status):
+        self.LoginStatus.setText(status)
+    
+    def btn_login(self):
+        if (g_objCpStatus.IsConnect == 0):
+            self.writeLoginStatus("Disconnected")
+        else:
+            self.writeLoginStatus("Connected")
+            self.worker = GetItems()
+            self.worker.start()
+            self.worker.checked.connect(self.dispTotalItemsTable)   # 시그널 슬롯 등록
+
+    def dispTotalItemsTable(Items):
+        #self.totalItemsTable.setho
+        i=1
+
+class GetItems(QThread):
+    checked = pyqtSignal(tuple)
+
+    def __init__(self):
+        super().__init__()
+
+    def run(self):
+        i=1
+        g_codeList = g_objCodeMgr.GetStockListByMarket(1)
+        self.checked.emit(g_codeList)     # 방출
+
+
+
 
 class Qworker(QThread):
     timeout = pyqtSignal(int)

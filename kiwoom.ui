@@ -440,18 +440,14 @@
    <layout class="QGridLayout" name="gridLayout_2">
     <item row="5" column="0">
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="1">
-       <widget class="QRadioButton" name="Include">
-        <property name="text">
-         <string>파생포함</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" rowspan="2">
+      <item row="0" column="0">
        <widget class="QLabel" name="TotalItems">
+        <property name="maximumSize">
+         <size>
+          <width>70</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="font">
          <font>
           <family>MS UI Gothic</family>
@@ -463,25 +459,27 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="2" rowspan="2">
+      <item row="0" column="1">
        <widget class="QPushButton" name="Add">
+        <property name="maximumSize">
+         <size>
+          <width>130</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="text">
          <string>관심종목추가</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QRadioButton" name="Exclude">
-        <property name="text">
-         <string>파생제외</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0" colspan="3">
-       <widget class="QTableWidget" name="totalListTable"/>
-      </item>
-      <item row="2" column="0" colspan="3">
+      <item row="1" column="0" colspan="2">
        <widget class="QLineEdit" name="ItemSearch">
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="echoMode">
          <enum>QLineEdit::Normal</enum>
         </property>
@@ -490,21 +488,221 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QTableWidget" name="totalListTable">
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item row="5" column="2">
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="1" column="0">
-       <widget class="QTableWidget" name="OutputTable">
-        <property name="cursor" stdset="0">
-         <cursorShape>IBeamCursor</cursorShape>
+      <item row="2" column="0">
+       <widget class="QDateEdit" name="fromDay">
+        <property name="palette">
+         <palette>
+          <active>
+           <colorrole role="Text">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>0</red>
+              <green>0</green>
+              <blue>127</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </active>
+          <inactive>
+           <colorrole role="Text">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>0</red>
+              <green>0</green>
+              <blue>127</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </inactive>
+          <disabled>
+           <colorrole role="Text">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>54</red>
+              <green>54</green>
+              <blue>54</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </disabled>
+         </palette>
         </property>
-        <property name="sortingEnabled">
+        <property name="calendarPopup">
          <bool>true</bool>
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
+      <item row="2" column="1">
+       <widget class="QTimeEdit" name="fromTime">
+        <property name="palette">
+         <palette>
+          <active>
+           <colorrole role="Text">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>0</red>
+              <green>0</green>
+              <blue>127</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </active>
+          <inactive>
+           <colorrole role="Text">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>0</red>
+              <green>0</green>
+              <blue>127</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </inactive>
+          <disabled>
+           <colorrole role="Text">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>54</red>
+              <green>54</green>
+              <blue>54</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </disabled>
+         </palette>
+        </property>
+        <property name="calendarPopup">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QDateEdit" name="toDay">
+        <property name="palette">
+         <palette>
+          <active>
+           <colorrole role="Text">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>0</red>
+              <green>0</green>
+              <blue>127</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </active>
+          <inactive>
+           <colorrole role="Text">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>0</red>
+              <green>0</green>
+              <blue>127</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </inactive>
+          <disabled>
+           <colorrole role="Text">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>54</red>
+              <green>54</green>
+              <blue>54</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </disabled>
+         </palette>
+        </property>
+        <property name="dateTime">
+         <datetime>
+          <hour>0</hour>
+          <minute>0</minute>
+          <second>0</second>
+          <year>2000</year>
+          <month>1</month>
+          <day>1</day>
+         </datetime>
+        </property>
+        <property name="calendarPopup">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QTimeEdit" name="toTime">
+        <property name="palette">
+         <palette>
+          <active>
+           <colorrole role="Text">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>0</red>
+              <green>0</green>
+              <blue>127</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </active>
+          <inactive>
+           <colorrole role="Text">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>0</red>
+              <green>0</green>
+              <blue>127</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </inactive>
+          <disabled>
+           <colorrole role="Text">
+            <brush brushstyle="SolidPattern">
+             <color alpha="255">
+              <red>54</red>
+              <green>54</green>
+              <blue>54</blue>
+             </color>
+            </brush>
+           </colorrole>
+          </disabled>
+         </palette>
+        </property>
+        <property name="calendarPopup">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>부터</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>까지</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="3">
        <widget class="QComboBox" name="comboBox">
         <property name="palette">
          <palette>
@@ -572,7 +770,17 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="5" column="0" colspan="3">
+       <widget class="QTableWidget" name="OutputTable">
+        <property name="cursor" stdset="0">
+         <cursorShape>IBeamCursor</cursorShape>
+        </property>
+        <property name="sortingEnabled">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" colspan="3">
        <widget class="QGraphicsView" name="graphicsView"/>
       </item>
      </layout>
@@ -587,10 +795,23 @@
     <item row="5" column="1">
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="3" column="0" colspan="2">
-       <widget class="QTableWidget" name="intListTable"/>
+       <widget class="QTableWidget" name="intListTable">
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item row="0" column="1">
        <widget class="QPushButton" name="Sub">
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="text">
          <string>관심종목제거</string>
         </property>
@@ -598,6 +819,12 @@
       </item>
       <item row="0" column="0">
        <widget class="QLabel" name="InterrestItem">
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="font">
          <font>
           <family>MS UI Gothic</family>
@@ -611,6 +838,12 @@
       </item>
       <item row="1" column="1">
        <widget class="QPushButton" name="down">
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="text">
          <string>아래로 ↓</string>
         </property>
@@ -618,6 +851,12 @@
       </item>
       <item row="1" column="0">
        <widget class="QPushButton" name="up">
+        <property name="maximumSize">
+         <size>
+          <width>100</width>
+          <height>16777215</height>
+         </size>
+        </property>
         <property name="text">
          <string>위로 ↑</string>
         </property>

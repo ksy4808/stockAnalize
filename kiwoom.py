@@ -11,6 +11,7 @@ from PyQt5.QtGui import QPalette
 from PyQt5.QAxContainer import *
 
 
+
 import constant as const
 const.codeLine = 0
 const.nameLine = 1
@@ -70,6 +71,16 @@ class WindowClass(QMainWindow, form_class) :
         self.comboBox.setDisabled(True)
         self.OutputTable.setDisabled(True)
         self.graphicsView.setDisabled(True)
+        ########## 시간 설정
+        defaultToTime = QTime(15,30,0)
+        defaultFromTime = QTime(9,0,0)
+        self.toTime.setTime(defaultToTime)
+        self.fromTime.setTime(defaultFromTime)
+        ########## 날짜 설정
+        defaultToDay = QDate(QDate.currentDate())
+        defaultFromDay = QDate(defaultToDay.addDays(-90))
+        self.toDay.setDate(defaultToDay)
+        self.fromDay.setDate(defaultFromDay)
     
     def timeout(self, num):
         num+=1
@@ -246,7 +257,26 @@ class WindowClass(QMainWindow, form_class) :
         if rqname == "opt10015_req":
             i=0
         elif rqname == "opt10059_req":
-            i=1
+            maxRepeatCnt = self.kiwoom.dynamicCall("GetRepeatCnt(QString, QString)", trcode, rqname)
+            rows = []
+            for i in range(0, maxRepeatCnt):
+                row = []
+                date = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자")
+                vol = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "누적거래대금")
+                individual = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "개인투자자")
+                foreigner = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "외국인투자자")
+                agency = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기관계")
+                corporation = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기타법인")
+                otherForeigner = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "내외국인")
+                row.append(date)
+                row.append(vol)
+                row.append(individual)
+                row.append(foreigner)
+                row.append(agency)
+                row.append(corporation)
+                row.append(otherForeigner)
+                rows.append(row)
+            i=0
 
     def confFuncList(self):
         con = sqlite3.connect("functionLists.db")
@@ -259,8 +289,10 @@ class WindowClass(QMainWindow, form_class) :
             self.comboBox.addItem(row[2])
 
     def confIntListTable(self):
-        column_headers = ['종목코드', '종목명', '업종코드']
+        column_headers = ['코드', '종목명', '업종코드']
         self.intListTable.setColumnCount(3)
+        self.intListTable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.intListTable.verticalHeader().hide()
         self.intListTable.showGrid()
         self.intListTable.setHorizontalHeaderLabels(column_headers)
         self.intListTable.setColumnHidden(2, True)
@@ -281,9 +313,11 @@ class WindowClass(QMainWindow, form_class) :
 
         self.totalListTable.setRowCount(len(kospiList)-1+len(kosdaqList)-1)
         self.totalListTable.setColumnCount(3)
+        self.totalListTable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.totalListTable.verticalHeader().hide()
         self.totalListTable.showGrid()
         self.totalListTable.setColumnHidden(2, True)
-        column_headers = ['종목코드', '종목명', '업종코드']
+        column_headers = ['코드', '종목명', '업종코드']
         self.totalListTable.setHorizontalHeaderLabels(column_headers)
         self.ItemListModel = []
        
@@ -351,7 +385,7 @@ class WindowClass(QMainWindow, form_class) :
                                 strQuantity)
         self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "매매구분",
                                 strTrade)
-        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "매매구분",
+        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "단위구분",
                                 strUnit)                                                                     
         self.kiwoom.dynamicCall("CommRqData(QString, QString, QString, QString)", "opt10059_req", "opt10059", "0",
                                 "0101")

@@ -1,7 +1,7 @@
 import sys
 import time
 import threading
-import pydevd
+#import pydevd #debug모드가아닌 그냥 run인경우 에러가 발생하므로 debug할때만 활성화 하고 사용할 것.
 import sqlite3
 import datetime as dt
 from PyQt5 import uic
@@ -9,18 +9,10 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QPalette
 from PyQt5.QAxContainer import *
-import matplotlib.patches as mpatches
-import numpy as np
-
-
 
 import constant as const
 const.codeLine = 0
 const.nameLine = 1
-
-
-
-
 
 import pandas as pd
 
@@ -72,7 +64,7 @@ class WindowClass(QMainWindow, form_class) :
         self.intListTable.setDisabled(True)
         self.comboBox.setDisabled(True)
         self.OutputTable.setDisabled(True)
-        self.graphicsView.setDisabled(True)
+
         ########## 시간 설정
         defaultToTime = QTime(15,30,0)
         defaultFromTime = QTime(9,0,0)
@@ -240,22 +232,24 @@ class WindowClass(QMainWindow, form_class) :
             self.intListTable.setDisabled(False)
             self.comboBox.setDisabled(False)
             self.OutputTable.setDisabled(False)
-            self.graphicsView.setDisabled(False)
+
 
             self.getCode = GetItems(self.kiwoom)
+            #self.getCode = GetItems()
             self.getCode.procComplete.connect(self.dispTotalItemsTable)   # 시그널 슬롯 등록
             self.getCode.start()  
 
             self.confIntListTable() 
             self.confFuncList()     
+            i=1
         else:
             #self.AllbuttonDisable()
             self.writeLoginStatus("Not connected")  # ui 파일을 생성할때 작성한 plainTextEdit의 objectName 으로 해당 plainTextEdit에 텍스트를 추가함
             self.LogonCheck.setDisabled(False)  # 로그인 버튼을 활성화 상태로 변경
     
     def receive_trdata(self, screen_no, rqname, trcode, recordname, prev_next, data_len, err_code, msg1, msg2):  # 키움 데이터 수신 함수
-        pydevd.connected = True
-        pydevd.settrace(suspend=False)
+    #    pydevd.connected = True
+    #    pydevd.settrace(suspend=False)
         if rqname == "opt10015_req":
             i=0
         elif rqname == "opt10059_req":
@@ -278,11 +272,11 @@ class WindowClass(QMainWindow, form_class) :
                 row.append(corporation)
                 row.append(otherForeigner)
                 rows.append(row)
-            self.plotBuyer(rows)
+            i=0
+            self.plotBuyer()
     
     def plotBuyer(self):
         i=1
-
 
     def confFuncList(self):
         con = sqlite3.connect("functionLists.db")
@@ -395,7 +389,7 @@ class WindowClass(QMainWindow, form_class) :
                                 strUnit)                                                                     
         self.kiwoom.dynamicCall("CommRqData(QString, QString, QString, QString)", "opt10059_req", "opt10059", "0",
                                 "0101")
-
+    
     def funcVolumn(self):
         x = self.intListTable.selectedIndexes()#선택된 셀의 행/열 번호가 반환된다.
         if len(x) != 0:
@@ -430,8 +424,8 @@ class GetItems(QThread):
         self.kiwoom = kiwoom
         self.working = True
     def run(self):
-        pydevd.connected = True
-        pydevd.settrace(suspend=False)
+#        pydevd.connected = True
+#        pydevd.settrace(suspend=False)
         kospi = self.GetCodeListByMarket(0)
         kosdaq = self.GetCodeListByMarket(10)
         kospi = list(kospi.split(";"))#kospi는 str타입이므로 ';'구분자를 통해 리스트 로 변경한다.
@@ -466,8 +460,8 @@ class Buyer(QThread):
         self.kiwoom = kiwoom
     
     def run(self):
-        pydevd.connected = True
-        pydevd.settrace(suspend=False)
+#        pydevd.connected = True
+#        pydevd.settrace(suspend=False)
         i=1
         a = []
         b = []
@@ -490,8 +484,8 @@ class Volumn(QThread):
         super().__init__()
         self.kiwoom = kiwoom
     def run(self):
-        pydevd.connected = True
-        pydevd.settrace(suspend=False)
+#        pydevd.connected = True
+#        pydevd.settrace(suspend=False)
         i=1
         a = []
         b = []

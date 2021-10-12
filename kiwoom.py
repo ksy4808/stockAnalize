@@ -9,6 +9,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QPalette
 from PyQt5.QAxContainer import *
+import matplotlib.patches as mpatches
+import numpy as np
 
 
 
@@ -276,7 +278,11 @@ class WindowClass(QMainWindow, form_class) :
                 row.append(corporation)
                 row.append(otherForeigner)
                 rows.append(row)
-            i=0
+            self.plotBuyer(rows)
+    
+    def plotBuyer(self):
+        i=1
+
 
     def confFuncList(self):
         con = sqlite3.connect("functionLists.db")
@@ -389,7 +395,6 @@ class WindowClass(QMainWindow, form_class) :
                                 strUnit)                                                                     
         self.kiwoom.dynamicCall("CommRqData(QString, QString, QString, QString)", "opt10059_req", "opt10059", "0",
                                 "0101")
-    
 
     def funcVolumn(self):
         x = self.intListTable.selectedIndexes()#선택된 셀의 행/열 번호가 반환된다.

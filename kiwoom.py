@@ -267,36 +267,34 @@ class WindowClass(QMainWindow, form_class) :
             i=0
         elif rqname == "opt10059_req":
             maxRepeatCnt = self.kiwoom.dynamicCall("GetRepeatCnt(QString, QString)", trcode, rqname)
-            maxRepeatCnt = 10
+            #maxRepeatCnt = 10
             listDate = []
-            listVol = []
-            listIndividual = []
-            listForeigner = []
-            listAgency = []
-            listCorporation = []
-            listOtherForeigner = []
+            intListVol = []
+            intListIndividual = []
+            intListForeigner = []
+            intListAgency = []
+            intListCorporation = []
+            intListOtherForeigner = []
             for i in range(0, maxRepeatCnt):
                 listDate.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자"))
-                listVol.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "누적거래대금"))
-                listIndividual.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "개인투자자"))
-                listForeigner.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "외국인투자자"))
-                listAgency.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기관계"))
-                listCorporation.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기타법인"))
-                listOtherForeigner.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "내외국인"))
-                listVol[i] = str(listVol[i].strip)
-                listVol[i] = int(listVol[i])
+                intListVol.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "누적거래대금").strip()))
+                intListIndividual.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "개인투자자").strip()))
+                intListForeigner.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "외국인투자자").strip()))
+                intListAgency.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기관계").strip()))
+                intListCorporation.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기타법인").strip()))
+                intListOtherForeigner.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "내외국인").strip()))
 
             rows = []
             rows.append(listDate)
-            rows.append(listVol)
-            rows.append(listIndividual)
-            rows.append(listForeigner)
-            rows.append(listAgency)
-            rows.append(listCorporation)
-            rows.append(listOtherForeigner)
-            self.plotBuyer(rows)
+            rows.append(intListVol)
+            rows.append(intListIndividual)
+            rows.append(intListForeigner)
+            rows.append(intListAgency)
+            rows.append(intListCorporation)
+            rows.append(intListOtherForeigner)
+            self.plotBuyer(rows,maxRepeatCnt)
     
-    def plotBuyer(self, rows):
+    def plotBuyer(self, rows, maxRepeatCnt):
         dateIndex = 0
         volIndex = 1
         individualIndex = 2
@@ -304,12 +302,24 @@ class WindowClass(QMainWindow, form_class) :
         agencyIndex = 4
         corporationIndex = 5
         otherForeignerIndex = 6
+        rowsInv = []
+        for i in list(range(0, 7)):
+            row = []
+            for j in list(range(0, maxRepeatCnt-1)):
+                row.append(rows[i][maxRepeatCnt-1-j])
+            rowsInv.append(row)
+
+
 
         self.fig.clf(111)
         ax = self.fig.add_subplot(111)
-        ax.plot(rows[dateIndex], rows[volIndex], label="label")
+        ax.plot(rowsInv[dateIndex], rowsInv[volIndex], label="거래량", color='g')
+        ax.plot(rowsInv[dateIndex], rowsInv[individualIndex], label="개인순매수", color='y')
+        ax.plot(rowsInv[dateIndex], rowsInv[foreignerIndex], label="외인순매수", color='b')
+        ax.plot(rowsInv[dateIndex], rowsInv[agencyIndex], label="외인순매수", color='r')
+
         #ax.plot(xVal, yVal, label=label, color='g')
-        ax.set_xticklabels(rows[dateIndex], rotation = 30)
+        ax.set_xticklabels(rowsInv[dateIndex], rotation = 30)
         ax.set_xlabel("x_axis")
         ax.set_ylabel("y_axis")
         ax.set_title("my graph")

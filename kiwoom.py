@@ -1,18 +1,29 @@
 import sys
 import time
 import threading
-#import pydevd #debug모드가아닌 그냥 run인경우 에러가 발생하므로 debug할때만 활성화 하고 사용할 것.
+import pydevd
 import sqlite3
 import datetime as dt
+import matplotlib.patches as mpatches
+from matplotlib import pyplot as plt
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import numpy as np
 from PyQt5 import uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QPalette
 from PyQt5.QAxContainer import *
 
+
+
+
 import constant as const
 const.codeLine = 0
 const.nameLine = 1
+
+
+
+
 
 import pandas as pd
 
@@ -37,6 +48,10 @@ class WindowClass(QMainWindow, form_class) :
 
         self.setupUi(self)
         pal = QPalette()
+        self.fig = plt.Figure()
+        self.canvas = FigureCanvas(self.fig)
+        self.layoutForPlot.addWidget(self.canvas)
+
         self.LogonCheck.clicked.connect(self.btn_login)
         self.kiwoom.OnEventConnect.connect(self.event_connect)  # 키움 서버 접속 관련 이벤트가 발생할 경우 event_connect 함수 호출
         self.Add.clicked.connect(self.btn_add)
@@ -235,48 +250,74 @@ class WindowClass(QMainWindow, form_class) :
 
 
             self.getCode = GetItems(self.kiwoom)
-            #self.getCode = GetItems()
             self.getCode.procComplete.connect(self.dispTotalItemsTable)   # 시그널 슬롯 등록
             self.getCode.start()  
 
             self.confIntListTable() 
             self.confFuncList()     
-            i=1
         else:
             #self.AllbuttonDisable()
             self.writeLoginStatus("Not connected")  # ui 파일을 생성할때 작성한 plainTextEdit의 objectName 으로 해당 plainTextEdit에 텍스트를 추가함
             self.LogonCheck.setDisabled(False)  # 로그인 버튼을 활성화 상태로 변경
     
     def receive_trdata(self, screen_no, rqname, trcode, recordname, prev_next, data_len, err_code, msg1, msg2):  # 키움 데이터 수신 함수
-    #    pydevd.connected = True
-    #    pydevd.settrace(suspend=False)
+        #pydevd.connected = True
+        #pydevd.settrace(suspend=False)
         if rqname == "opt10015_req":
             i=0
         elif rqname == "opt10059_req":
             maxRepeatCnt = self.kiwoom.dynamicCall("GetRepeatCnt(QString, QString)", trcode, rqname)
-            rows = []
+            maxRepeatCnt = 10
+            listDate = []
+            listVol = []
+            listIndividual = []
+            listForeigner = []
+            listAgency = []
+            listCorporation = []
+            listOtherForeigner = []
             for i in range(0, maxRepeatCnt):
-                row = []
-                date = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자")
-                vol = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "누적거래대금")
-                individual = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "개인투자자")
-                foreigner = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "외국인투자자")
-                agency = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기관계")
-                corporation = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기타법인")
-                otherForeigner = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "내외국인")
-                row.append(date)
-                row.append(vol)
-                row.append(individual)
-                row.append(foreigner)
-                row.append(agency)
-                row.append(corporation)
-                row.append(otherForeigner)
-                rows.append(row)
-            i=0
-            self.plotBuyer()
+                listDate.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자"))
+                listVol.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "누적거래대금"))
+                listIndividual.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "개인투자자"))
+                listForeigner.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "외국인투자자"))
+                listAgency.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기관계"))
+                listCorporation.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기타법인"))
+                listOtherForeigner.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "내외국인"))
+                listVol[i] = str(listVol[i].strip)
+                listVol[i] = int(listVol[i])
+
+            rows = []
+            rows.append(listDate)
+            rows.append(listVol)
+            rows.append(listIndividual)
+            rows.append(listForeigner)
+            rows.append(listAgency)
+            rows.append(listCorporation)
+            rows.append(listOtherForeigner)
+            self.plotBuyer(rows)
     
-    def plotBuyer(self):
+    def plotBuyer(self, rows):
+        dateIndex = 0
+        volIndex = 1
+        individualIndex = 2
+        foreignerIndex = 3
+        agencyIndex = 4
+        corporationIndex = 5
+        otherForeignerIndex = 6
+
+        self.fig.clf(111)
+        ax = self.fig.add_subplot(111)
+        ax.plot(rows[dateIndex], rows[volIndex], label="label")
+        #ax.plot(xVal, yVal, label=label, color='g')
+        ax.set_xticklabels(rows[dateIndex], rotation = 30)
+        ax.set_xlabel("x_axis")
+        ax.set_ylabel("y_axis")
+        ax.set_title("my graph")
+        ax.legend()
+        self.canvas.draw()
+        
         i=1
+
 
     def confFuncList(self):
         con = sqlite3.connect("functionLists.db")
@@ -389,7 +430,7 @@ class WindowClass(QMainWindow, form_class) :
                                 strUnit)                                                                     
         self.kiwoom.dynamicCall("CommRqData(QString, QString, QString, QString)", "opt10059_req", "opt10059", "0",
                                 "0101")
-    
+
     def funcVolumn(self):
         x = self.intListTable.selectedIndexes()#선택된 셀의 행/열 번호가 반환된다.
         if len(x) != 0:
@@ -424,8 +465,8 @@ class GetItems(QThread):
         self.kiwoom = kiwoom
         self.working = True
     def run(self):
-#        pydevd.connected = True
-#        pydevd.settrace(suspend=False)
+        #pydevd.connected = True
+        #pydevd.settrace(suspend=False)
         kospi = self.GetCodeListByMarket(0)
         kosdaq = self.GetCodeListByMarket(10)
         kospi = list(kospi.split(";"))#kospi는 str타입이므로 ';'구분자를 통해 리스트 로 변경한다.
@@ -460,8 +501,8 @@ class Buyer(QThread):
         self.kiwoom = kiwoom
     
     def run(self):
-#        pydevd.connected = True
-#        pydevd.settrace(suspend=False)
+        #pydevd.connected = True
+        #pydevd.settrace(suspend=False)
         i=1
         a = []
         b = []
@@ -484,8 +525,8 @@ class Volumn(QThread):
         super().__init__()
         self.kiwoom = kiwoom
     def run(self):
-#        pydevd.connected = True
-#        pydevd.settrace(suspend=False)
+        #pydevd.connected = True
+        #pydevd.settrace(suspend=False)
         i=1
         a = []
         b = []

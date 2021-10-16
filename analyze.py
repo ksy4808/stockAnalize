@@ -1,6 +1,7 @@
 import os
 import sys
 import datetime
+from datetime import date
 import sqlite3
 import numpy as np
 import matplotlib.pyplot as plt

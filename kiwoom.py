@@ -4,7 +4,9 @@ import threading
 import pydevd
 import sqlite3
 import datetime as dt
+from datetime import date
 import matplotlib.patches as mpatches
+import matplotlib.ticker as ticker
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import numpy as np
@@ -14,10 +16,13 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import QPalette
 from PyQt5.QAxContainer import *
 
-
-
-
 import constant as const
+# 한글 폰트 사용을 위해서 세팅
+from matplotlib import font_manager, rc
+font_path = "C:/Windows/Fonts/NGULIM.TTF"
+font = font_manager.FontProperties(fname=font_path).get_name()
+rc('font', family=font)
+
 const.codeLine = 0
 const.nameLine = 1
 
@@ -276,7 +281,12 @@ class WindowClass(QMainWindow, form_class) :
             intListCorporation = []
             intListOtherForeigner = []
             for i in range(0, maxRepeatCnt):
-                listDate.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자"))
+                strDate = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자").strip()
+                strYear = strDate[0:4]
+                strMonth = strDate[4:6]
+                strDay = strDate[6:8]
+                #listDate.append(date(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자").strip()))
+                listDate.append(date(int(strYear), int(strMonth), int(strDay)))
                 intListVol.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "누적거래대금").strip()))
                 intListIndividual.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "개인투자자").strip()))
                 intListForeigner.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "외국인투자자").strip()))
@@ -292,42 +302,74 @@ class WindowClass(QMainWindow, form_class) :
             rows.append(intListAgency)
             rows.append(intListCorporation)
             rows.append(intListOtherForeigner)
+            rows = self.calcBuyerAccumulation(rows,maxRepeatCnt)
             self.plotBuyer(rows,maxRepeatCnt)
     
+    def calcBuyerAccumulation(self, rows, maxRepeatCnt):
+        dateIndex = 0
+        volIndex = 1
+        individualIndex = 2
+        accAndividualIndex = 7
+        foreignerIndex = 3
+        accForeignerIndex = 8
+        agencyIndex = 4
+        accAgencyIndex = 9
+        corporationIndex = 5
+        accCorporationIndex = 10
+        otherForeignerIndex = 6
+        accOtherForeignerIndex = 11
+        rowsInv = []
+        for i in list(range(0, 7)):
+            row = []
+            for j in list(range(0, maxRepeatCnt)):
+                row.append(rows[i][maxRepeatCnt-1-j])
+            rowsInv.append(row)
+        for i in list(range(0,5)):
+            row = []
+            acc = 0
+            for j in list(range(0, maxRepeatCnt)):
+                acc += rowsInv[i+2][j]
+                row.append(acc)
+            rowsInv.append(row)
+
+
+        return rowsInv
+
+
     def plotBuyer(self, rows, maxRepeatCnt):
         dateIndex = 0
         volIndex = 1
         individualIndex = 2
+        accAndividualIndex = 7
         foreignerIndex = 3
+        accForeignerIndex = 8
         agencyIndex = 4
+        accAgencyIndex = 9
         corporationIndex = 5
+        accCorporationIndex = 10
         otherForeignerIndex = 6
-        rowsInv = []
-        for i in list(range(0, 7)):
-            row = []
-            for j in list(range(0, maxRepeatCnt-1)):
-                row.append(rows[i][maxRepeatCnt-1-j])
-            rowsInv.append(row)
-
-
+        accOtherForeignerIndex = 11
 
         self.fig.clf(111)
         ax = self.fig.add_subplot(111)
-        ax.plot(rowsInv[dateIndex], rowsInv[volIndex], label="거래량", color='g')
-        ax.plot(rowsInv[dateIndex], rowsInv[individualIndex], label="개인순매수", color='y')
-        ax.plot(rowsInv[dateIndex], rowsInv[foreignerIndex], label="외인순매수", color='b')
-        ax.plot(rowsInv[dateIndex], rowsInv[agencyIndex], label="외인순매수", color='r')
+        ax2 = ax.twinx()
+        ax2.bar(rows[dateIndex], rows[volIndex], label="거래량", color='g', width=0.4)
+        ax.plot(rows[dateIndex], rows[accAndividualIndex], label="개인순매수(누적)", color='y')
+        ax.plot(rows[dateIndex], rows[accForeignerIndex], label="외인순매수(누적)", color='b')
+        ax.plot(rows[dateIndex], rows[accAgencyIndex], label="기관순매수(누적)", color='r')
 
-        #ax.plot(xVal, yVal, label=label, color='g')
-        ax.set_xticklabels(rowsInv[dateIndex], rotation = 30)
+        ax.set_xticklabels(rows[dateIndex], rotation = 30)
         ax.set_xlabel("x_axis")
         ax.set_ylabel("y_axis")
         ax.set_title("my graph")
-        ax.legend()
+        
+        #ax.xaxis.set_major_locator(ticker.MultipleLocator(3))
+        #ax.xaxis.set_minor_locator(ticker.MultipleLocator(3))
+        ax.legend(loc = 'upper right')
+        ax2.legend(loc = 'upper left')
         self.canvas.draw()
         
         i=1
-
 
     def confFuncList(self):
         con = sqlite3.connect("functionLists.db")

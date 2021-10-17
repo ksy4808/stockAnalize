@@ -16,6 +16,9 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import QPalette
 from PyQt5.QAxContainer import *
 
+import pandas_datareader.data as web
+from pandas import Series, DataFrame
+
 import constant as const
 # 한글 폰트 사용을 위해서 세팅
 from matplotlib import font_manager, rc
@@ -280,19 +283,29 @@ class WindowClass(QMainWindow, form_class) :
             intListAgency = []
             intListCorporation = []
             intListOtherForeigner = []
+            #dfBuyer = DataFrame()# 비어있는 DataFrame을 선언함.
+            dfBuyer = DataFrame(columns=['vol', 'individual', 'foreigner', 'agency', 'corporation', 'otherForeigner'])
+
             for i in range(0, maxRepeatCnt):
+                listBuyer = []
                 strDate = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자").strip()
                 strYear = strDate[0:4]
                 strMonth = strDate[4:6]
                 strDay = strDate[6:8]
                 #listDate.append(date(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자").strip()))
-                listDate.append(date(int(strYear), int(strMonth), int(strDay)))
-                intListVol.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "누적거래대금").strip()))
-                intListIndividual.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "개인투자자").strip()))
-                intListForeigner.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "외국인투자자").strip()))
-                intListAgency.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기관계").strip()))
-                intListCorporation.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기타법인").strip()))
-                intListOtherForeigner.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "내외국인").strip()))
+                dtDate = (date(int(strYear), int(strMonth), int(strDay)))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "누적거래대금").strip()))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "개인투자자").strip()))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "외국인투자자").strip()))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기관계").strip()))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기타법인").strip()))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "내외국인").strip()))
+
+                #dfBuyer = dfBuyer.append(Series(listBuyer, index = dfBuyer.columns, name=dtDate))
+                tmpDfBuyer = DataFrame(columns = dfBuyer.columns)
+                tmpDfBuyer = tmpDfBuyer.append(Series(listBuyer, index = dfBuyer.columns, name=dtDate))
+                dfBuyer = tmpDfBuyer.append(dfBuyer)
+                print(dfBuyer)
 
             rows = []
             rows.append(listDate)
@@ -358,7 +371,7 @@ class WindowClass(QMainWindow, form_class) :
         ax.plot(rows[dateIndex], rows[accForeignerIndex], label="외인순매수(누적)", color='b')
         ax.plot(rows[dateIndex], rows[accAgencyIndex], label="기관순매수(누적)", color='r')
 
-        ax.set_xticklabels(rows[dateIndex], rotation = 30)
+        #ax.set_xticklabels(rows[dateIndex], rotation = 30)
         ax.set_xlabel("x_axis")
         ax.set_ylabel("y_axis")
         ax.set_title("my graph")

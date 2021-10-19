@@ -4,7 +4,9 @@ import threading
 import pydevd
 import sqlite3
 import datetime as dt
+from datetime import date
 import matplotlib.patches as mpatches
+import matplotlib.ticker as ticker
 from matplotlib import pyplot as plt
 from matplotlib import font_manager, rc
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -14,8 +16,22 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QPalette
 from PyQt5.QAxContainer import *
+<<<<<<< HEAD
 import platform
+=======
+
+import pandas_datareader.data as web
+from pandas import Series, DataFrame
+import plotly.graph_objects as go
+
+>>>>>>> 75c8b7e56216bd30d25632a12b8fda83dad1b98e
 import constant as const
+# 한글 폰트 사용을 위해서 세팅
+from matplotlib import font_manager, rc
+font_path = "C:/Windows/Fonts/NGULIM.TTF"
+font = font_manager.FontProperties(fname=font_path).get_name()
+rc('font', family=font)
+
 const.codeLine = 0
 const.nameLine = 1
 
@@ -50,6 +66,7 @@ class WindowClass(QMainWindow, form_class) :
         self.setupUi(self)
         pal = QPalette()
         self.fig = plt.Figure()
+
         self.canvas = FigureCanvas(self.fig)
         self.layoutForPlot.addWidget(self.canvas)
 
@@ -270,6 +287,7 @@ class WindowClass(QMainWindow, form_class) :
             maxRepeatCnt = self.kiwoom.dynamicCall("GetRepeatCnt(QString, QString)", trcode, rqname)
             maxRepeatCnt = 10
             listDate = []
+<<<<<<< HEAD
             listVol = []
             listIndividual = []
             listForeigner = []
@@ -305,20 +323,98 @@ class WindowClass(QMainWindow, form_class) :
         agencyIndex = 4
         corporationIndex = 5
         otherForeignerIndex = 6
+=======
+            intListVol = []
+            intListIndividual = []
+            intListForeigner = []
+            intListAgency = []
+            intListCorporation = []
+            intListOtherForeigner = []
+            #dfBuyer = DataFrame()# 비어있는 DataFrame을 선언함.
+            dfBuyer = DataFrame(columns=['vol', 'individual', 'foreigner', 'agency', 'corporation', 'otherForeigner'])
+
+            for i in range(0, maxRepeatCnt):
+                listBuyer = []
+                strDate = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자").strip()
+                strYear = strDate[0:4]
+                strMonth = strDate[4:6]
+                strDay = strDate[6:8]
+                #listDate.append(date(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자").strip()))
+                dtDate = (date(int(strYear), int(strMonth), int(strDay)))
+                #dtDate = strYear + "-" + strMonth + "-" + strDay
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "누적거래대금").strip()))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "개인투자자").strip()))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "외국인투자자").strip()))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기관계").strip()))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기타법인").strip()))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "내외국인").strip()))
+
+                #dfBuyer = dfBuyer.append(Series(listBuyer, index = dfBuyer.columns, name=dtDate))
+                tmpDfBuyer = DataFrame(columns = dfBuyer.columns)
+                tmpDfBuyer = tmpDfBuyer.append(Series(listBuyer, index = dfBuyer.columns, name=dtDate))
+                dfBuyer = tmpDfBuyer.append(dfBuyer)
+
+            #dfBuyer = self.calcBuyerAccumulation(dfBuyer,maxRepeatCnt)
+            self.plotBuyer(dfBuyer,maxRepeatCnt)
+    
+    def calcBuyerAccumulation(self, dfBuyer, maxRepeatCnt):
+        acc = 0
+        dfBuyer = dfBuyer.tail(maxRepeatCnt)
+        individualAcc = 0
+        foreignerAcc = 0
+        agencyAcc = 0
+        corporationAcc = 0
+        otherForeignerAcc = 0
+        for i in range(0, maxRepeatCnt):
+            aDfBuyer = dfBuyer.iloc[i]
+            aDfBuyer.loc['individual'] = individualAcc + aDfBuyer.loc['individual']
+            individualAcc = aDfBuyer.loc['individual']
+            aDfBuyer.loc['foreigner'] = foreignerAcc + aDfBuyer.loc['foreigner']
+            foreignerAcc = aDfBuyer.loc['foreigner']
+            aDfBuyer.loc['agency'] = agencyAcc + aDfBuyer.loc['agency']
+            agencyAcc = aDfBuyer.loc['agency']
+            aDfBuyer.loc['corporation'] = corporationAcc + aDfBuyer.loc['corporation']
+            corporationAcc = aDfBuyer.loc['corporation']
+            aDfBuyer.loc['otherForeigner'] = otherForeignerAcc + aDfBuyer.loc['otherForeigner']
+            otherForeignerAcc = aDfBuyer.loc['otherForeigner']
+            dfBuyer.iloc[i] = aDfBuyer
+        return dfBuyer
+
+
+    def plotBuyer(self, dfBuyer, maxRepeatCnt):
+        dfBuyer = self.calcBuyerAccumulation(dfBuyer,maxRepeatCnt)
+        #bar = dfBuyer.plot.line(grid=True)
+>>>>>>> 75c8b7e56216bd30d25632a12b8fda83dad1b98e
 
         self.fig.clf(111)
+        #self.fig.add_trace(go.Scatter(x=dfBuyer.index, y=dfBuyer['vol']))  #go로 생성한 경우 trace생성하는 법
         ax = self.fig.add_subplot(111)
+<<<<<<< HEAD
         ax.plot(rows[dateIndex], rows[volIndex], label="label")
         #ax.plot(xVal, yVal, label=label, color='g')
         ax.set_xticklabels(rows[dateIndex], rotation = 30)
+=======
+        ax2 = ax.twinx()
+
+        ax2.bar(dfBuyer.index, dfBuyer.loc[:,'vol'], label="거래량", color='g', width=0.8)
+        ax.plot(dfBuyer.index, dfBuyer.loc[:, 'individual'], label="개인순매수(누적)", color='y')
+        ax.plot(dfBuyer.index, dfBuyer.loc[:,'foreigner'], label="외인순매수(누적)", color='b')
+        ax.plot(dfBuyer.index, dfBuyer.loc[:, 'agency'], label="기관순매수(누적)", color='r')
+
+        #ax.set_xticklabels(rows[dateIndex], rotation = 30)
+>>>>>>> 75c8b7e56216bd30d25632a12b8fda83dad1b98e
         ax.set_xlabel("x_axis")
         ax.set_ylabel("y_axis")
         ax.set_title("my graph")
-        ax.legend()
+        ax.grid()
+        
+        #ax.xaxis.set_major_locator(ticker.MultipleLocator(3))
+        #ax.xaxis.set_minor_locator(ticker.MultipleLocator(3))
+        ax.legend(loc = 'upper right')
+        ax2.legend(loc = 'upper left')
         self.canvas.draw()
         
         i=1
-
 
     def confFuncList(self):
         con = sqlite3.connect("functionLists.db")

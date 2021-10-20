@@ -16,19 +16,14 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QPalette
 from PyQt5.QAxContainer import *
-<<<<<<< HEAD
 import platform
-=======
+
 
 import pandas_datareader.data as web
 from pandas import Series, DataFrame
 import pandas as pd
 import plotly.graph_objects as go
 
-<<<<<<< HEAD
->>>>>>> 75c8b7e56216bd30d25632a12b8fda83dad1b98e
-=======
->>>>>>> 75c8b7e56216bd30d25632a12b8fda83dad1b98e
 import constant as const
 # 한글 폰트 사용을 위해서 세팅
 from matplotlib import font_manager, rc
@@ -290,80 +285,7 @@ class WindowClass(QMainWindow, form_class) :
             i=0
         elif rqname == "opt10059_req":
             maxRepeatCnt = self.kiwoom.dynamicCall("GetRepeatCnt(QString, QString)", trcode, rqname)
-            maxRepeatCnt = 10
             listDate = []
-<<<<<<< HEAD
-<<<<<<< HEAD
-            listVol = []
-            listIndividual = []
-            listForeigner = []
-            listAgency = []
-            listCorporation = []
-            listOtherForeigner = []
-            for i in range(0, maxRepeatCnt):
-                listDate.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자"))
-                listVol.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "누적거래대금"))
-                listIndividual.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "개인투자자"))
-                listForeigner.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "외국인투자자"))
-                listAgency.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기관계"))
-                listCorporation.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기타법인"))
-                listOtherForeigner.append(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "내외국인"))
-                strDate = listVol[i].strip
-                listVol[i] = int(strDate)
-
-            rows = []
-            rows.append(listDate)
-            rows.append(listVol)
-            rows.append(listIndividual)
-            rows.append(listForeigner)
-            rows.append(listAgency)
-            rows.append(listCorporation)
-            rows.append(listOtherForeigner)
-            self.plotBuyer(rows)
-    
-    def plotBuyer(self, rows):
-        dateIndex = 0
-        volIndex = 1
-        individualIndex = 2
-        foreignerIndex = 3
-        agencyIndex = 4
-        corporationIndex = 5
-        otherForeignerIndex = 6
-=======
-            intListVol = []
-            intListIndividual = []
-            intListForeigner = []
-            intListAgency = []
-            intListCorporation = []
-            intListOtherForeigner = []
-            #dfBuyer = DataFrame()# 비어있는 DataFrame을 선언함.
-            dfBuyer = DataFrame(columns=['vol', 'individual', 'foreigner', 'agency', 'corporation', 'otherForeigner'])
-
-            for i in range(0, maxRepeatCnt):
-                listBuyer = []
-                strDate = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자").strip()
-                strYear = strDate[0:4]
-                strMonth = strDate[4:6]
-                strDay = strDate[6:8]
-                #listDate.append(date(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자").strip()))
-                dtDate = (date(int(strYear), int(strMonth), int(strDay)))
-                #dtDate = strYear + "-" + strMonth + "-" + strDay
-                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "누적거래대금").strip()))
-                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "개인투자자").strip()))
-                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "외국인투자자").strip()))
-                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기관계").strip()))
-                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기타법인").strip()))
-                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "내외국인").strip()))
-
-                #dfBuyer = dfBuyer.append(Series(listBuyer, index = dfBuyer.columns, name=dtDate))
-                tmpDfBuyer = DataFrame(columns = dfBuyer.columns)
-                tmpDfBuyer = tmpDfBuyer.append(Series(listBuyer, index = dfBuyer.columns, name=dtDate))
-                dfBuyer = tmpDfBuyer.append(dfBuyer)
-
-            #dfBuyer = self.calcBuyerAccumulation(dfBuyer,maxRepeatCnt)
-            self.plotBuyer(dfBuyer,maxRepeatCnt)
-    
-=======
             intListVol = []
             intListIndividual = []
             intListForeigner = []
@@ -380,8 +302,8 @@ class WindowClass(QMainWindow, form_class) :
                 strMonth = strDate[4:6]
                 strDay = strDate[6:8]
                 #listDate.append(date(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자").strip()))
-                #dtDate = (date(int(strYear), int(strMonth), int(strDay)))
-                dtDate = strYear+"."+strMonth+"."+strDay
+                dtDate = (date(int(strYear), int(strMonth), int(strDay)))
+                #dtDate = strYear+"."+strMonth+"."+strDay
                 #dtDate = strYear + "-" + strMonth + "-" + strDay
                 listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "누적거래대금").strip()))
                 listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "개인투자자").strip()))
@@ -397,8 +319,7 @@ class WindowClass(QMainWindow, form_class) :
 
             #dfBuyer = self.calcBuyerAccumulation(dfBuyer,maxRepeatCnt)
             self.plotBuyer(dfBuyer,maxRepeatCnt)
-    
->>>>>>> 75c8b7e56216bd30d25632a12b8fda83dad1b98e
+
     def calcBuyerAccumulation(self, dfBuyer, maxRepeatCnt):
         acc = 0
         #dfBuyer = dfBuyer.tail(maxRepeatCnt)
@@ -426,26 +347,10 @@ class WindowClass(QMainWindow, form_class) :
     def plotBuyer(self, dfBuyer, maxRepeatCnt):
         dfBuyer = self.calcBuyerAccumulation(dfBuyer,maxRepeatCnt)
         #bar = dfBuyer.plot.line(grid=True)
-<<<<<<< HEAD
->>>>>>> 75c8b7e56216bd30d25632a12b8fda83dad1b98e
-=======
->>>>>>> 75c8b7e56216bd30d25632a12b8fda83dad1b98e
 
         self.fig.clf(111)
         #self.fig.add_trace(go.Scatter(x=dfBuyer.index, y=dfBuyer['vol']))  #go로 생성한 경우 trace생성하는 법
         ax = self.fig.add_subplot(111)
-<<<<<<< HEAD
-        self.plot.show()
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-        ax.plot(rows[dateIndex], rows[volIndex], label="label")
-        #ax.plot(xVal, yVal, label=label, color='g')
-        ax.set_xticklabels(rows[dateIndex], rotation = 30)
-=======
-=======
->>>>>>> 75c8b7e56216bd30d25632a12b8fda83dad1b98e
->>>>>>> 766d3a07f20c47b198d52a3acb4fce5b242c78a6
         ax2 = ax.twinx()
 
         ax2.bar(dfBuyer.index, dfBuyer.loc[:,'vol'], label="거래량", color='g')
@@ -454,10 +359,6 @@ class WindowClass(QMainWindow, form_class) :
         ax.plot(dfBuyer.index, dfBuyer.loc[:, 'agency'], label="기관순매수(누적)", color='r')
 
         #ax.set_xticklabels(rows[dateIndex], rotation = 30)
-<<<<<<< HEAD
->>>>>>> 75c8b7e56216bd30d25632a12b8fda83dad1b98e
-=======
->>>>>>> 75c8b7e56216bd30d25632a12b8fda83dad1b98e
         ax.set_xlabel("x_axis")
         ax.set_ylabel("y_axis")
         ax.set_title("my graph")

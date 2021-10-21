@@ -19,10 +19,10 @@ from PyQt5.QAxContainer import *
 import platform
 
 
-import pandas_datareader.data as web
+#import pandas_datareader.data as web
 from pandas import Series, DataFrame
 import pandas as pd
-import plotly.graph_objects as go
+
 
 import constant as const
 # 한글 폰트 사용을 위해서 세팅
@@ -45,7 +45,7 @@ rc('font', family=font)
 
 
 
-#UI파일 연결 git text
+#UI파일 연결 
 #단, UI파일은 Python 코드 파일과 같은 디렉토리에 위치해야한다.
 form_class = uic.loadUiType("kiwoom.ui")[0]
 
@@ -445,9 +445,7 @@ class WindowClass(QMainWindow, form_class) :
         self.getCode.stop()
 
     def procFunc(self):
-        localVar = locals()
-        if self.worker in locals():
-            del self.worker
+
         x = self.intListTable.selectedIndexes()#선택된 셀의 행/열 번호가 반환된다.
         if len(x) != 0:
             self.worker = Buyer(self.kiwoom)

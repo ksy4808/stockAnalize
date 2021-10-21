@@ -45,7 +45,7 @@ rc('font', family=font)
 
 
 
-#UI파일 연결
+#UI파일 연결 git text
 #단, UI파일은 Python 코드 파일과 같은 디렉토리에 위치해야한다.
 form_class = uic.loadUiType("kiwoom.ui")[0]
 
@@ -567,6 +567,8 @@ class Buyer(QThread):
         self.kiwoom = kiwoom
         self.kiwoom.OnReceiveTrData.connect(self.receive_trdata)  # 키움 데이터 수신 관련 이벤트가 발생할 경우 receive_trdata 함수 호출
     
+
+
     def run(self):
         pydevd.connected = True
         pydevd.settrace(suspend=False)

@@ -56,7 +56,7 @@ class WindowClass(QMainWindow, form_class) :
         super().__init__()
         
         self.kiwoom = QAxWidget("KHOPENAPI.KHOpenAPICtrl.1")
-        self.kiwoom.OnReceiveTrData.connect(self.receive_trdata)  # 키움 데이터 수신 관련 이벤트가 발생할 경우 receive_trdata 함수 호출
+        #self.kiwoom.OnReceiveTrData.connect(self.receive_trdata)  # 키움 데이터 수신 관련 이벤트가 발생할 경우 receive_trdata 함수 호출
 
         #self.worker = Qworker()
         #self.worker.start()
@@ -445,10 +445,20 @@ class WindowClass(QMainWindow, form_class) :
         self.getCode.stop()
 
     def procFunc(self):
-        functions = {'일자별 수급': self.funcBuyer,
-                     '일자별 거래량': self.funcVolumn}
-        func = functions[self.comboBox.currentText()]
-        func()
+        localVar = locals()
+        if self.worker in locals():
+            del self.worker
+        x = self.intListTable.selectedIndexes()#선택된 셀의 행/열 번호가 반환된다.
+        if len(x) != 0:
+            self.worker = Buyer(self.kiwoom)
+            self.worker.start()
+            #self.worker.timeout.connect(self.timeout)   # 시그널 슬롯 등록
+
+
+        #functions = {'일자별 수급': self.funcBuyer,
+        #             '일자별 거래량': self.funcVolumn}
+        #func = functions[self.comboBox.currentText()]
+        #func()
 
     def funcBuyer(self):
         x = self.intListTable.selectedIndexes()#선택된 셀의 행/열 번호가 반환된다.
@@ -555,10 +565,11 @@ class Buyer(QThread):
     def __init__(self, kiwoom):
         super().__init__()
         self.kiwoom = kiwoom
+        self.kiwoom.OnReceiveTrData.connect(self.receive_trdata)  # 키움 데이터 수신 관련 이벤트가 발생할 경우 receive_trdata 함수 호출
     
     def run(self):
-        #pydevd.connected = True
-        #pydevd.settrace(suspend=False)
+        pydevd.connected = True
+        pydevd.settrace(suspend=False)
         i=1
         a = []
         b = []
@@ -573,7 +584,50 @@ class Buyer(QThread):
                                 strDate)  # 키움 dynamicCall 함수를 통해 SetInputValue 함수를 호출하여 종목코드를 셋팅함
         self.kiwoom.dynamicCall("CommRqData(QString, QString, QString, QString)", "opt10015_req", "opt10015", "0",
                                 "0101")  # 키움 dynamicCall 함수를 통해 CommRqData 함수를 호출하여 opt10015 API를 구분명 opt10015_req, 화면번호 0101으로 호출함
-    
+    def receive_trdata(self, screen_no, rqname, trcode, recordname, prev_next, data_len, err_code, msg1, msg2):  # 키움 데이터 수신 함수
+        #pydevd.connected = True
+        #pydevd.settrace(suspend=False)
+        if rqname == "opt10015_req":
+            i=0
+        elif rqname == "opt10059_req":
+            maxRepeatCnt = self.kiwoom.dynamicCall("GetRepeatCnt(QString, QString)", trcode, rqname)
+            listDate = []
+            intListVol = []
+            intListIndividual = []
+            intListForeigner = []
+            intListAgency = []
+            intListCorporation = []
+            intListOtherForeigner = []
+            #dfBuyer = DataFrame()# 비어있는 DataFrame을 선언함.
+            dfBuyer = DataFrame(columns=['vol', 'individual', 'foreigner', 'agency', 'corporation', 'otherForeigner'])
+
+            for i in range(0, maxRepeatCnt):
+                listBuyer = []
+                strDate = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자").strip()
+                strYear = strDate[2:4]
+                strMonth = strDate[4:6]
+                strDay = strDate[6:8]
+                #listDate.append(date(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자").strip()))
+                dtDate = (date(int(strYear), int(strMonth), int(strDay)))
+                #dtDate = strYear+"."+strMonth+"."+strDay
+                #dtDate = strYear + "-" + strMonth + "-" + strDay
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "누적거래대금").strip()))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "개인투자자").strip()))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "외국인투자자").strip()))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기관계").strip()))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "기타법인").strip()))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "내외국인").strip()))
+
+                #dfBuyer = dfBuyer.append(Series(listBuyer, index = dfBuyer.columns, name=dtDate))
+                #tmpDfBuyer = DataFrame(columns = dfBuyer.columns)
+                #tmpDfBuyer = tmpDfBuyer.append(Series(listBuyer, index = dfBuyer.columns, name=dtDate))
+                dfBuyer = dfBuyer.append(Series(listBuyer, index = dfBuyer.columns, name=dtDate))
+
+            #dfBuyer = self.calcBuyerAccumulation(dfBuyer,maxRepeatCnt)
+            self.plotBuyer(dfBuyer,maxRepeatCnt)
+    def __del__(self):
+        pring("Buyer Deleted")
+        super().__del__()
 class Volumn(QThread):
     procComplete = pyqtSignal(list, list)
 

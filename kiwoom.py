@@ -451,13 +451,16 @@ class WindowClass(QMainWindow, form_class) :
             strName = str(self.intListTable.item(x[0].row(), const.nameLine).text())
             self.worker = Buyer(self.kiwoom, strCode, strName)
             self.worker.start()
-            #self.worker.timeout.connect(self.timeout)   # 시그널 슬롯 등록
+            self.worker.procDone.connect(self.plotProgBuyer)   # 시그널 슬롯 등록
 
 
         #functions = {'일자별 수급': self.funcBuyer,
         #             '일자별 거래량': self.funcVolumn}
         #func = functions[self.comboBox.currentText()]
         #func()
+
+    def plotProgBuyer(self, Buyer, Prog, BuyerMaxRepeatCnt, ProgMaxRepeatCnt):
+        i=1
 
     def funcBuyer(self):
         x = self.intListTable.selectedIndexes()#선택된 셀의 행/열 번호가 반환된다.
@@ -559,8 +562,7 @@ class GetItems(QThread):
         self.wait(100) #100ms
 
 class Buyer(QThread):
-    procComplete = pyqtSignal(list, list)
-
+    procDone = pyqtSignal(DataFrame, DataFrame, int, int)
     def __init__(self, kiwoom, strCode, strName):
         super().__init__()
         self.kiwoom = kiwoom
@@ -572,11 +574,35 @@ class Buyer(QThread):
     def run(self):
         pydevd.connected = True
         pydevd.settrace(suspend=False)
-        i=1
-        a = []
-        b = []
-        self.procComplete.emit(a, b)
-        self.opt10015Req("000020", "20211007")
+
+        strToday = self.getTodayStr()
+        strQuantity = str(1)#1이면 금액, 2면 수량
+        strTrade = str(0)#0이면 순매수, 1이면 매수, 2면 매도
+        strUnit = str(1)#1000이면 천주, 1이면 단주
+        self.opt10059Req(strToday, self.strCode, strQuantity, strTrade, strUnit)
+        self.waitOpt10059Req = 1
+        while(self.waitOpt10059Req):
+            i=1
+        strTimeDay = str(2)#1이면 시간별, 2이면 날짜별
+        strQuantity = str(1)#1이면 금액, 2면 수량
+        self.opt90013Req(strTimeDay, strQuantity, self.strCode, strToday)
+        self.waitOpt90013Req = 1
+        while(self.waitOpt90013Req):
+            i=1
+        self.procDone.emit(self.dfBuyer, self.dfBuyer, self.buyerMaxRepeatCnt, self.buyerMaxRepeatCnt)
+
+    def opt90013Req(self, strTimeDay, strQuantity, strCode, strToday):
+        strDate = str(strToday)#YYYYMMDD 형태로 정리해야함
+        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "시간일자구분",
+                                strTimeDay)
+        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "금액수량구분",
+                                strQuantity)
+        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "종목코드",
+                                strCode)
+        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "날짜",
+                                strDate)                                                                 
+        self.kiwoom.dynamicCall("CommRqData(QString, QString, QString, QString)", "opt90013_req", "opt90013", "0",
+                                "0101")
 
     def opt10015Req(self, code, startDate):
         strDate = str(startDate)#YYYYMMDD 형태로 정리해야함
@@ -586,6 +612,21 @@ class Buyer(QThread):
                                 strDate)  # 키움 dynamicCall 함수를 통해 SetInputValue 함수를 호출하여 종목코드를 셋팅함
         self.kiwoom.dynamicCall("CommRqData(QString, QString, QString, QString)", "opt10015_req", "opt10015", "0",
                                 "0101")  # 키움 dynamicCall 함수를 통해 CommRqData 함수를 호출하여 opt10015 API를 구분명 opt10015_req, 화면번호 0101으로 호출함
+
+    def opt10059Req(self, strToday, strCode, strQuantity, strTrade, strUnit):
+        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "일자",
+                                strToday)
+        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "종목코드",
+                                strCode)
+        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "금액수량구분",
+                                strQuantity)
+        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "매매구분",
+                                strTrade)
+        self.kiwoom.dynamicCall("SetInputValue(QString, QString)", "단위구분",
+                                strUnit)                                                                     
+        self.kiwoom.dynamicCall("CommRqData(QString, QString, QString, QString)", "opt10059_req", "opt10059", "0",
+                                "0101")
+
     def receive_trdata(self, screen_no, rqname, trcode, recordname, prev_next, data_len, err_code, msg1, msg2):  # 키움 데이터 수신 함수
         #pydevd.connected = True
         #pydevd.settrace(suspend=False)
@@ -605,12 +646,7 @@ class Buyer(QThread):
 
             for i in range(0, maxRepeatCnt):
                 listBuyer = []
-                strDate = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자").strip()
-                strYear = strDate[2:4]
-                strMonth = strDate[4:6]
-                strDay = strDate[6:8]
-                #listDate.append(date(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자").strip()))
-                dtDate = (date(int(strYear), int(strMonth), int(strDay)))
+                dtDate = self.getDtDateFromKiwoom(trcode, rqname, i)
                 #dtDate = strYear+"."+strMonth+"."+strDay
                 #dtDate = strYear + "-" + strMonth + "-" + strDay
                 listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "누적거래대금").strip()))
@@ -626,7 +662,45 @@ class Buyer(QThread):
                 dfBuyer = dfBuyer.append(Series(listBuyer, index = dfBuyer.columns, name=dtDate))
 
             #dfBuyer = self.calcBuyerAccumulation(dfBuyer,maxRepeatCnt)
-            self.plotBuyer(dfBuyer,maxRepeatCnt)
+            #self.plotBuyer(dfBuyer,maxRepeatCnt)
+            self.dfBuyer = dfBuyer
+            self.buyerMaxRepeatCnt = maxRepeatCnt
+            self.waitOpt10059Req = 0
+        elif rqname == "opt90013_req":
+            maxRepeatCnt = self.kiwoom.dynamicCall("GetRepeatCnt(QString, QString)", trcode, rqname)
+            dfProg = DataFrame(columns=['progSell', 'progBuy', 'progVol', 'progPureBye'])
+            for i in range(0, maxRepeatCnt):
+                listBuyer = []
+                dtDate = self.getDtDateFromKiwoom(trcode, rqname, i)
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "프로그램매도금액").strip()))
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "프로그램매수금액").strip()))
+                listBuyer.append(listBuyer[0]+listBuyer[1])
+                listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "프로그램순매수금액").strip()))
+                dfProg = dfProg.append(Series(listBuyer, index = dfProg.columns, name=dtDate))
+            pring(dfProg)
+            i=1
+    def getDtDateFromKiwoom(self, trcode, rqname, i):
+        strDate = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자").strip()
+        strYear = strDate[2:4]
+        strMonth = strDate[4:6]
+        strDay = strDate[6:8]
+        dtDate = (date(int(strYear), int(strMonth), int(strDay)))
+        return dtDate
+
+
+    def getTodayStr(self):
+        x = dt.datetime.now()
+        strYear = str(x.year)
+        if int(x.month) < 10:
+            strMonth = "0"+str(x.month)
+        else:
+            strMonth = str(x.month)
+        if int(x.day) < 10:
+            strDay = "0"+str(x.day)
+        else:
+            strDay = str(x.day)
+        return strYear + strMonth + strDay
+
     def __del__(self):
         pring("Buyer Deleted")
         super().__del__()

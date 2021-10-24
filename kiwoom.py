@@ -343,7 +343,6 @@ class WindowClass(QMainWindow, form_class) :
             dfBuyer.iloc[maxRepeatCnt-1-i] = aDfBuyer
         return dfBuyer
 
-
     def plotBuyer(self, dfBuyer, maxRepeatCnt):
         dfBuyer = self.calcBuyerAccumulation(dfBuyer,maxRepeatCnt)
         #bar = dfBuyer.plot.line(grid=True)
@@ -448,7 +447,9 @@ class WindowClass(QMainWindow, form_class) :
 
         x = self.intListTable.selectedIndexes()#선택된 셀의 행/열 번호가 반환된다.
         if len(x) != 0:
-            self.worker = Buyer(self.kiwoom)
+            strCode = str(self.intListTable.item(x[0].row(), const.codeLine).text())
+            strName = str(self.intListTable.item(x[0].row(), const.nameLine).text())
+            self.worker = Buyer(self.kiwoom, strCode, strName)
             self.worker.start()
             #self.worker.timeout.connect(self.timeout)   # 시그널 슬롯 등록
 
@@ -560,11 +561,12 @@ class GetItems(QThread):
 class Buyer(QThread):
     procComplete = pyqtSignal(list, list)
 
-    def __init__(self, kiwoom):
+    def __init__(self, kiwoom, strCode, strName):
         super().__init__()
         self.kiwoom = kiwoom
         self.kiwoom.OnReceiveTrData.connect(self.receive_trdata)  # 키움 데이터 수신 관련 이벤트가 발생할 경우 receive_trdata 함수 호출
-    
+        self.strCode = strCode
+        self.strName = strName
 
 
     def run(self):

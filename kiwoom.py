@@ -677,7 +677,7 @@ class Buyer(QThread):
                 listBuyer.append(listBuyer[0]+listBuyer[1])
                 listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "프로그램순매수금액").strip()))
                 dfProg = dfProg.append(Series(listBuyer, index = dfProg.columns, name=dtDate))
-            pring(dfProg)
+            print(dfProg)
             i=1
     def getDtDateFromKiwoom(self, trcode, rqname, i):
         strDate = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자").strip()

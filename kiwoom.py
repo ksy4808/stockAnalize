@@ -5,6 +5,7 @@ import pydevd
 import sqlite3
 import datetime as dt
 from datetime import date
+from time import sleep
 import matplotlib.patches as mpatches
 import matplotlib.ticker as ticker
 from matplotlib import pyplot as plt
@@ -17,6 +18,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import QPalette
 from PyQt5.QAxContainer import *
 import platform
+
 
 
 #import pandas_datareader.data as web
@@ -460,6 +462,11 @@ class WindowClass(QMainWindow, form_class) :
         #func()
 
     def plotProgBuyer(self, Buyer, Prog, BuyerMaxRepeatCnt, ProgMaxRepeatCnt):
+        print(Buyer)
+        print(Prog)
+        pltData = pd.concat([Buyer, Prog], axis = 1)
+        print(pltData)#framedata 합치기
+        self.plotBuyer(pltData,BuyerMaxRepeatCnt)
         i=1
 
     def funcBuyer(self):
@@ -579,17 +586,18 @@ class Buyer(QThread):
         strQuantity = str(1)#1이면 금액, 2면 수량
         strTrade = str(0)#0이면 순매수, 1이면 매수, 2면 매도
         strUnit = str(1)#1000이면 천주, 1이면 단주
-        self.opt10059Req(strToday, self.strCode, strQuantity, strTrade, strUnit)
         self.waitOpt10059Req = 1
+        self.opt10059Req(strToday, self.strCode, strQuantity, strTrade, strUnit)#종목별 투자자 요청
         while(self.waitOpt10059Req):
             i=1
         strTimeDay = str(2)#1이면 시간별, 2이면 날짜별
         strQuantity = str(1)#1이면 금액, 2면 수량
-        self.opt90013Req(strTimeDay, strQuantity, self.strCode, strToday)
         self.waitOpt90013Req = 1
+        sleep(1)
+        self.opt90013Req(strTimeDay, strQuantity, self.strCode, strToday)
         while(self.waitOpt90013Req):
             i=1
-        self.procDone.emit(self.dfBuyer, self.dfBuyer, self.buyerMaxRepeatCnt, self.buyerMaxRepeatCnt)
+        self.procDone.emit(self.dfBuyer, self.dfProg, self.buyerMaxRepeatCnt, self.progMaxRepeatCnt)
 
     def opt90013Req(self, strTimeDay, strQuantity, strCode, strToday):
         strDate = str(strToday)#YYYYMMDD 형태로 정리해야함
@@ -677,8 +685,12 @@ class Buyer(QThread):
                 listBuyer.append(listBuyer[0]+listBuyer[1])
                 listBuyer.append(int(self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "프로그램순매수금액").strip()))
                 dfProg = dfProg.append(Series(listBuyer, index = dfProg.columns, name=dtDate))
-            print(dfProg)
-            i=1
+            #print(dfProg)
+            self.dfProg = dfProg
+            self.progMaxRepeatCnt = maxRepeatCnt
+            #i=1
+            self.waitOpt90013Req = 0
+    
     def getDtDateFromKiwoom(self, trcode, rqname, i):
         strDate = self.kiwoom.dynamicCall("CommGetData(QString, QString, QString, int, QString)", trcode, "", rqname, i, "일자").strip()
         strYear = strDate[2:4]
@@ -686,7 +698,6 @@ class Buyer(QThread):
         strDay = strDate[6:8]
         dtDate = (date(int(strYear), int(strMonth), int(strDay)))
         return dtDate
-
 
     def getTodayStr(self):
         x = dt.datetime.now()
@@ -702,7 +713,7 @@ class Buyer(QThread):
         return strYear + strMonth + strDay
 
     def __del__(self):
-        pring("Buyer Deleted")
+        print("Buyer Deleted")
         super().__del__()
 class Volumn(QThread):
     procComplete = pyqtSignal(list, list)

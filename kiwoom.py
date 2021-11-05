@@ -468,6 +468,10 @@ class WindowClass(QMainWindow, form_class) :
         print(pltData)#framedata 합치기
         self.plotBuyer(pltData,BuyerMaxRepeatCnt)
         i=1
+        if hasattr(self, 'worker'):#self(나자신) 오브젝트에 worker라는 attribute가 있는지 확인할 수 있음
+            self.worker.exit()
+            self.worker.quit()
+            self.worker.terminate()
 
     def funcBuyer(self):
         x = self.intListTable.selectedIndexes()#선택된 셀의 행/열 번호가 반환된다.
@@ -582,21 +586,22 @@ class Buyer(QThread):
         pydevd.connected = True
         pydevd.settrace(suspend=False)
 
+        while True:
+            i=1
+
         strToday = self.getTodayStr()
         strQuantity = str(1)#1이면 금액, 2면 수량
         strTrade = str(0)#0이면 순매수, 1이면 매수, 2면 매도
         strUnit = str(1)#1000이면 천주, 1이면 단주
         self.waitOpt10059Req = 1
         self.opt10059Req(strToday, self.strCode, strQuantity, strTrade, strUnit)#종목별 투자자 요청
-        while(self.waitOpt10059Req):
-            i=1
+        sleep(1)#
         strTimeDay = str(2)#1이면 시간별, 2이면 날짜별
         strQuantity = str(1)#1이면 금액, 2면 수량
         self.waitOpt90013Req = 1
-        sleep(1)
+        sleep(1)#
         self.opt90013Req(strTimeDay, strQuantity, self.strCode, strToday)
-        while(self.waitOpt90013Req):
-            i=1
+        sleep(1)#
         self.procDone.emit(self.dfBuyer, self.dfProg, self.buyerMaxRepeatCnt, self.progMaxRepeatCnt)
 
     def opt90013Req(self, strTimeDay, strQuantity, strCode, strToday):
@@ -712,9 +717,9 @@ class Buyer(QThread):
             strDay = str(x.day)
         return strYear + strMonth + strDay
 
-    def __del__(self):
-        print("Buyer Deleted")
-        super().__del__()
+    #def __del__(self):
+    #    print("Buyer Deleted")
+    #    super().__del__()
 class Volumn(QThread):
     procComplete = pyqtSignal(list, list)
 
